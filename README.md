@@ -18,6 +18,17 @@ swap_dataset = datasets[0]
 meta_datas = get_metadatas(swap_dataset, limit = 20)
 HELP, meta_datas[0]
 
+; It is important to pass a limit value if you suspect that get_metadatas will return a lot of information (some datasets have millions of entries)
+; If you want to process a lot of meta_datas you can use the limit and the offset keywords as such
+offset = 0
+limit = 20
+REPEAT BEGIN
+   meta_datas = get_meta_datas(swap_dataset, OFFSET = offset, LIMIT = limit)
+   PRINT, offset; at each call offset will be increased
+   ; Do some processing with the meta-datas
+ENDREP UNTIL N_ELEMENTS(meta_datas) LT limit
+
+
 ; Get some specific meta-datas from the swap dataset (all of it for the 1st January 2011)
 meta_datas = get_meta_datas(swap_dataset, date_obs={min: '2011-01-01', max: '2011-01-02'})
 FOR i = 0, N_ELEMENTS(meta_datas) - 1 DO PRINT, meta_datas[i].date_obs
