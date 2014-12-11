@@ -56,17 +56,35 @@ FUNCTION expand_filter, fields, filter_name, filter_value
 	ENDELSE
 END
 
+;+
+;	:Author:  Benjamin Mampaey
+;	:Keywords:
+;		verbose : In, Optional, Type=boolean
+;		*field_name* : In, Optional
+;			*field_name* is any tag of a meta_data struct. See https://github.com/bmampaey/SOLARNET-IDL-client for more information. 
+;	:Return: A list of dataset struct
+;	:Uses: IDLnetUrl, JSON_PARSE
+;	:History: See https://github.com/bmampaey/SOLARNET-IDL-client/commits/master
+;	:Examples:
+;		datasets = get_datasets(); Get all the datasets
+;		datasets = get_datasets(name= 'swap'); Get the dataset named swap
+;		datasets = get_datasets(telescope= 'SDO'); Get the datasets from the SDO telescope
+;-
 
-FUNCTION get_datasets, _EXTRA = filters
+FUNCTION get_datasets, VERBOSE=verbose, _EXTRA = filters
+	; Check the version number as JSON_PARSE is only available from version 8.2
+	version = STRSPLIT(!VERSION.RELEASE, '.', /EXTRACT)
+	IF ~(FIX(version[0]) GE 8 && FIX(version[1]) GE 2) THEN MESSAGE, 'IDL version 8.2 or higher is required for this function!'
+	
 	url_scheme = 'http'
 	url_host = 'benjmam-pc:8000'
 	url_path = 'api/v1/dataset?limit=0'
 	schema_url_path = 'api/v1/dataset/schema'
-	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host)
+	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host, VERBOSE = verbose)
 	
 	IF N_ELEMENTS(filters) NE 0 THEN BEGIN
 		
-		url->SetProperty, /VERBOSE, URL_PATH=schema_url_path
+		url->SetProperty, URL_PATH=schema_url_path
 		data_raw = url->Get( /STRING_ARRAY )
 		data = JSON_PARSE(data_raw, /TOSTRUCT)
 		fields = data.fields
@@ -77,30 +95,56 @@ FUNCTION get_datasets, _EXTRA = filters
 		ENDFOR
 	ENDIF
 	
-	PRINT, "Getting ", url_path
-	
-	url->SetProperty, /VERBOSE, URL_PATH=url_path
+	url->SetProperty, URL_PATH=url_path
 	data_raw = url->Get( /STRING_ARRAY )
 	data = JSON_PARSE(data_raw, /TOSTRUCT)
 	RETURN, data.objects
 END
 
-FUNCTION get_meta_datas, dataset, offset = offset, limit = limit, _EXTRA = filters
+;+
+;	:Author:  Benjamin Mampaey
+;	:Params: 
+;		dataset : in, required, type=struct 
+;			A dataset struct as returned by the get_datasets function 
+;	:Keywords: 
+;		limit : In, Optional, Default=20,  Type=int
+;			The maximum number of records to return. Set to 0 to disable the limit (inadvisable if large number of records expected !)
+;		offset : In/Out, Optional, Type=int
+;			The starting index of records requested. Use in combination with limit to request a large set of records in smaller calls.  
+;		verbose : In, Optional, Type=boolean
+;		*field_name* : In, Optional
+;			*field_name* is any tag of a meta_data struct. See https://github.com/bmampaey/SOLARNET-IDL-client for more information. 
+;	:Return: A list of meta_data struct
+;	:Uses: IDLnetUrl, JSON_PARSE
+;	:History: See https://github.com/bmampaey/SOLARNET-IDL-client/commits/master
+;	:Examples:
+;		datasets = get_datasets(name= 'swap'); Get the swap dataset
+;		swap_dataset = datasets[0]
+;		meta_datas = get_meta_datas(swap_dataset); Get some meta-datas from the swap dataset
+;		meta_datas = get_meta_datas(swap_dataset, date_obs={min: '2011-01-01', max: '2011-01-02'}, limit = 0); Get all the meta-datas from the swap dataset for the 1st January 2011
+;		meta_datas = get_meta_datas(swap_dataset, date_obs={min: '2011-01-01', max: '2011-01-02'}, exptime = 10, limit = 0); Get all the meta-datas from the swap dataset for the 1st January 2011 and with a exposure time of exactly 10 seconds
+;-
+
+FUNCTION get_meta_datas, dataset, offset = offset, limit = limit, VERBOSE=verbose, _EXTRA = filters
+	; Check the version number as JSON_PARSE is only available from version 8.2
+	version = STRSPLIT(!VERSION.RELEASE, '.', /EXTRACT)
+	IF ~(FIX(version[0]) GE 8 && FIX(version[1]) GE 2) THEN MESSAGE, 'IDL version 8.2 or higher is required for this function!'
+	
 	url_scheme = 'http'
 	url_host = 'benjmam-pc:8000'
 	url_path = 'api/v1/' + dataset.name + '_meta_data?'
 	schema_url_path = 'api/v1/' + dataset.name + '_meta_data/schema'
-	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host)
+	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host, VERBOSE = verbose)
 	
 	IF N_ELEMENTS(offset) EQ 0 THEN offset = 0
-	IF N_ELEMENTS(limit) EQ 0 THEN limit = 0
+	IF N_ELEMENTS(limit) EQ 0 THEN limit = 20
 	
 	url_path = url_path + "limit=" + STRTRIM(limit,2) + "&offset=" + STRTRIM(offset,2)
 	
 	offset = offset + limit
 	
 	IF N_ELEMENTS(filters) NE 0 THEN BEGIN
-		url->SetProperty, /VERBOSE, URL_PATH=schema_url_path
+		url->SetProperty, URL_PATH=schema_url_path
 		data_raw = url->Get( /STRING_ARRAY )
 		data = JSON_PARSE(data_raw, /TOSTRUCT)
 		fields = data.fields
@@ -111,21 +155,37 @@ FUNCTION get_meta_datas, dataset, offset = offset, limit = limit, _EXTRA = filte
 		ENDFOR
 	ENDIF
 	
-	PRINT, "Getting ", url_path
 	
-	url->SetProperty, /VERBOSE, URL_PATH=url_path
+	url->SetProperty, URL_PATH=url_path
 	data_raw = url->Get( /STRING_ARRAY )
 	data = JSON_PARSE(data_raw, /TOSTRUCT)
 	RETURN, data.objects
 END
 
-FUNCTION download_data, meta_data, dir = dir
+
+;+
+;	:Author:  Benjamin Mampaey
+;	:Params: 
+;		meta_data : in, required, type=struct 
+;			A meta_data struct as returned by the get_meta_datas function 
+;	:Keywords: 
+;		dir : In, Optional, Type=string
+;			The directory where to download the file.
+;		verbose : In, Optional, Type=boolean
+;	:Return: The path to the downloaded file
+;	:Uses: IDLnetUrl
+;	:History: See https://github.com/bmampaey/SOLARNET-IDL-client/commits/master
+;	:Examples:
+;		PRINT, download_data(meta_datas[0], dir = '/tmp')
+;-
+
+FUNCTION download_data, meta_data, dir = dir, VERBOSE=verbose
 	
 	IF N_ELEMENTS(dir) EQ 0 THEN dir = '.'
 	
 	path = strsplit(meta_data.data_location.url, '/', /EXTRACT)
 	filename = dir + PATH_SEP() + path[N_ELEMENTS(path) - 1]
 	
-	url = OBJ_NEW('IDLnetUrl')
+	url = OBJ_NEW('IDLnetUrl', VERBOSE = verbose)
 	RETURN, url->Get(FILENAME=filename, URL=meta_data.data_location.url)
 END
