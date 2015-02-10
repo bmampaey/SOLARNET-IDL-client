@@ -77,7 +77,7 @@ FUNCTION get_datasets, VERBOSE=verbose, _EXTRA = filters
 	IF ~(FIX(version[0]) GE 8 && FIX(version[1]) GE 2) THEN MESSAGE, 'IDL version 8.2 or higher is required for this function!'
 	
 	url_scheme = 'http'
-	url_host = 'benjmam-pc:8000'
+	url_host = 'solarnet.oma.be'
 	url_path = 'api/v1/dataset?limit=0'
 	schema_url_path = 'api/v1/dataset/schema'
 	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host, VERBOSE = verbose)
@@ -131,9 +131,9 @@ FUNCTION get_meta_datas, dataset, offset = offset, limit = limit, VERBOSE=verbos
 	IF ~(FIX(version[0]) GE 8 && FIX(version[1]) GE 2) THEN MESSAGE, 'IDL version 8.2 or higher is required for this function!'
 	
 	url_scheme = 'http'
-	url_host = 'benjmam-pc:8000'
-	url_path = 'api/v1/' + dataset.name + '_meta_data?'
-	schema_url_path = 'api/v1/' + dataset.name + '_meta_data/schema'
+	url_host = 'solarnet.oma.be'
+	url_path = 'api/v1/' + dataset.id + '_meta_data?'
+	schema_url_path = 'api/v1/' + dataset.id + '_meta_data/schema'
 	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host, VERBOSE = verbose)
 	
 	IF N_ELEMENTS(offset) EQ 0 THEN offset = 0
