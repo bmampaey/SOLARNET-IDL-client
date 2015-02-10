@@ -33,8 +33,8 @@ ENDREP UNTIL N_ELEMENTS(meta_datas) LT limit
 meta_datas = get_meta_datas(swap_dataset, date_obs={min: '2011-01-01', max: '2011-01-02'}, limit = 0)
 FOR i = 0, N_ELEMENTS(meta_datas) - 1 DO PRINT, meta_datas[i].date_obs
 
-; Get some specific meta-datas from the swap dataset (all of it for the year 2011 and with an exposure time < 10 seconds)
-meta_datas = get_meta_datas(swap_dataset, date_obs={min: '2011-01-01', max: '2011-01-02'}, exptime={max: 10}, limit = 0)
+; Get some specific meta-datas from the swap dataset (all of it for January 2011 and with an exposure time < 10 seconds)
+meta_datas = get_meta_datas(swap_dataset, date_obs={min: '2011-01-01', max: '2011-02-01'}, exptime={max: 10}, limit = 0)
 FOR i = 0, N_ELEMENTS(meta_datas) - 1 DO PRINT, meta_datas[i].date_obs, meta_datas[i].exptime
 
 ; Download the data corresponding to some meta data
