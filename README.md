@@ -11,7 +11,7 @@ datasets = get_datasets()
 FOR i = 0, N_ELEMENTS(datasets) - 1 DO HELP, datasets[i]
 
 ; Get a specific dataset
-datasets = get_datasets(name = 'swap')
+datasets = get_datasets(name = 'Swap Level 1')
 swap_dataset = datasets[0]
 
 ; Get meta-datas from the swap dataset
