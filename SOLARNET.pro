@@ -78,8 +78,8 @@ FUNCTION get_datasets, VERBOSE=verbose, _EXTRA = filters
 	
 	url_scheme = 'http'
 	url_host = 'solarnet.oma.be'
-	url_path = 'api/v1/dataset?limit=0'
-	schema_url_path = 'api/v1/dataset/schema'
+	url_path = 'SDA/api/v1/dataset?limit=0'
+	schema_url_path = 'SDA/api/v1/dataset/schema'
 	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host, VERBOSE = verbose)
 	
 	IF N_ELEMENTS(filters) NE 0 THEN BEGIN
@@ -132,8 +132,8 @@ FUNCTION get_meta_datas, dataset, offset = offset, limit = limit, VERBOSE=verbos
 	
 	url_scheme = 'http'
 	url_host = 'solarnet.oma.be'
-	url_path = 'api/v1/' + dataset.id + '_meta_data?'
-	schema_url_path = 'api/v1/' + dataset.id + '_meta_data/schema'
+	url_path = 'SDA/api/v1/metadata/' + dataset.id + '?'
+	schema_url_path = 'SDA/api/v1/' + dataset.id + '/schema'
 	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host, VERBOSE = verbose)
 	
 	IF N_ELEMENTS(offset) EQ 0 THEN offset = 0
@@ -183,9 +183,9 @@ FUNCTION download_data, meta_data, dir = dir, VERBOSE=verbose
 	
 	IF N_ELEMENTS(dir) EQ 0 THEN dir = '.'
 	
-	path = strsplit(meta_data.data_location.url, '/', /EXTRACT)
+	path = strsplit(meta_data.data_location.file_url, '/', /EXTRACT)
 	filename = dir + PATH_SEP() + path[N_ELEMENTS(path) - 1]
 	
 	url = OBJ_NEW('IDLnetUrl', VERBOSE = verbose)
-	RETURN, url->Get(FILENAME=filename, URL=meta_data.data_location.url)
+	RETURN, url->Get(FILENAME=filename, URL=meta_data.data_location.file_url)
 END
