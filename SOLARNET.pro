@@ -133,7 +133,7 @@ FUNCTION get_meta_datas, dataset, offset = offset, limit = limit, VERBOSE=verbos
 	url_scheme = 'http'
 	url_host = 'solarnet.oma.be'
 	url_path = 'SDA/api/v1/metadata/' + dataset.id + '?'
-	schema_url_path = 'SDA/api/v1/' + dataset.id + '/schema'
+	schema_url_path = 'SDA/api/v1/metadata/' + dataset.id + '/schema'
 	url = OBJ_NEW('IDLnetUrl', URL_SCHEME=url_scheme, URL_HOST=url_host, VERBOSE = verbose)
 	
 	IF N_ELEMENTS(offset) EQ 0 THEN offset = 0
