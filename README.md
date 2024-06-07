@@ -16,7 +16,7 @@ The SVO code is split in several parts:
 SOLARNET API IDL client
 ==========================
 
-This package can be used as a client or as an example how to work with the API using IDL version 8.2 or higher.
+This package can be used as a client or as an example how to work with the API using IDL version 8.2 or higher. It requires the [IDLAstro library](https://asd.gsfc.nasa.gov/archive/idlastro/) to be installed and accessible via the [IDL_PATH variable](https://www.nv5geospatialsoftware.com/docs/prefs_directory.html) 
 
 Example usage
 -------------
@@ -53,9 +53,9 @@ FOR i = 0, N_ELEMENTS(metadatas) - 1 DO PRINT, metadatas[i].date_obs, metadatas[
 ; If you want to process a lot of metadatas, you can use the limit and the offset keywords as such to request it by batch
 offset = 0
 limit = 10
-REPEAT BEGIN
-   metadatas = get_metadatas(swap_dataset, date_obs={min: '2011-01-01', max: '2011-02-01'}, OFFSET = offset, LIMIT = limit)
-   PRINT, 'OFFSET', offset ; At each call to get_metadatas, offset will be increased
+REPEAT BEGIN $
+   metadatas = get_metadatas(swap_dataset, date_obs={min: '2011-01-01', max: '2011-02-01'}, OFFSET = offset, LIMIT = limit) & $
+   PRINT, 'OFFSET', offset & $ ; At each call to get_metadatas, offset will be increased
    ; Do some processing with the metadatas
 ENDREP UNTIL N_ELEMENTS(metadatas) LT limit
 
